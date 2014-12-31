@@ -55,10 +55,6 @@ public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivi
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.setMessage(getString(R.string.progress_dialog_loading_text));
         refreshListOfCities();
     }
 
@@ -69,7 +65,13 @@ public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivi
     }
 
     private void showProgressDialog() {
-        if (progressDialog != null && !progressDialog.isShowing()) {
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setIndeterminate(true);
+            progressDialog.setMessage(getString(R.string.progress_dialog_loading_text));
+        }
+
+        if (!progressDialog.isShowing()) {
             progressDialog.show();
         }
     }
@@ -80,7 +82,7 @@ public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivi
         Api.getListOfCities(new Api.ApiCallback() {
             @Override
             public void success(Object result) {
-                ListOfCitiesAdapter listOfCitiesAdapter = new ListOfCitiesAdapter((List<String>)result, getActivity());
+                ListOfCitiesAdapter listOfCitiesAdapter = new ListOfCitiesAdapter((List<String>) result, getActivity());
                 mCitiesListView.setAdapter(listOfCitiesAdapter);
                 dismissProgressDialog();
             }
@@ -122,5 +124,9 @@ public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivi
         addCityDialogFragment.show(getChildFragmentManager(), "add_city_dialog_frag");
     }
 
-
+    @Override
+    public void onDestroy() {
+        dismissProgressDialog();
+        super.onDestroy();
+    }
 }
