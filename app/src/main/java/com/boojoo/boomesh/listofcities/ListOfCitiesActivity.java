@@ -8,9 +8,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends ActionBarActivity {
+public class ListOfCitiesActivity extends ActionBarActivity {
 
-    private static final String CLASS_TAG = MainActivity.class.getSimpleName();
+    public interface OptionsMenuCallback {
+        public void addCitySelected();
+    }
+
+    private static final String CLASS_TAG = ListOfCitiesActivity.class.getSimpleName();
+
+    private OptionsMenuCallback mOptionsMenuCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +25,9 @@ public class MainActivity extends ActionBarActivity {
         if (savedInstanceState == null) {
             try {
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.add(R.id.full_screen_fragment, new ListOfCitiesFragment());
+                ListOfCitiesFragment listOfCitiesFragment = new ListOfCitiesFragment();
+                mOptionsMenuCallback = listOfCitiesFragment;
+                transaction.add(R.id.full_screen_fragment, listOfCitiesFragment);
                 transaction.disallowAddToBackStack();
                 transaction.commit();
             } catch (Exception e) {
@@ -45,6 +53,7 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_add_city) {
+            mOptionsMenuCallback.addCitySelected();
             return true;
         }
 

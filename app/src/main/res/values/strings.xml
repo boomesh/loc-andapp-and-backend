@@ -2,6 +2,8 @@
 <resources>
 
     <string name="app_name">ListOfCities</string>
-    <string name="action_add_city">Add City</string>
+    <string name="action_add_city_text">Add City</string>
+    <string name="progress_dialog_loading_text">Loading...</string>
+    <string name="enter_city_text">Enter city name: </string>
 
 </resources>

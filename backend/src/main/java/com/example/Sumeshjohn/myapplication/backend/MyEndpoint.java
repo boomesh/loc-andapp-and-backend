@@ -12,7 +12,6 @@ import com.google.api.server.spi.config.ApiNamespace;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Named;
@@ -23,11 +22,10 @@ import javax.inject.Named;
 @Api(name = "citiesApi", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.loc.boomesh.boojoo.com", ownerName = "backend.loc.boomesh.boojoo.com", packagePath = ""))
 public class MyEndpoint {
 
-    private List<String> mCitites = Collections.EMPTY_LIST;
+    private List<String> mCitites = new ArrayList<String>(Arrays.asList("Toronto", "Noronto", "Horonto", "Rowronto", "Showronto", "Whoaronto", "Mo'ronto", "Joeronto", "Yo,ronto", "Fo'Sho'ronto"));
 
     @ApiMethod(name = "getListOfCities")
     public CitiesResponse getListOfCities() {
-        mCitites = new ArrayList<String>(Arrays.asList("Toronto", "Noronto", "Horonto", "Rowronto", "Showronto", "Whoaronto", "Mo'ronto", "Joeronto", "Yo,ronto", "Fo'Sho'ronto", "Joeronto"));
         CitiesResponse response = new CitiesResponse();
         response.setCities(mCitites);
         return response;
@@ -35,7 +33,8 @@ public class MyEndpoint {
 
     @ApiMethod(name = "addCityToList")
     public void addCityToTopOfList(@Named("city") String city) {
-        mCitites.add(0, city);
+        if (!Utils.isStringEmpty(city)) {
+            mCitites.add(0, city);
+        }
     }
-
 }

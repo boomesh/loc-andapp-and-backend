@@ -1,7 +1,7 @@
 package com.boojoo.boomesh.listofcities;
 
 
-import android.os.AsyncTask;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -10,23 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.boojoo.boomesh.loc.backend.citiesApi.CitiesApi;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
-import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
-import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
+import com.boojoo.boomesh.api.Api;
+import com.boojoo.boomesh.listofcities.dialogs.AddCityDialogFragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ListOfCitiesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ListOfCitiesFragment extends Fragment {
+public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivity.OptionsMenuCallback {
 
     private static final String CLASS_TAG = ListOfCitiesFragment.class.getSimpleName();
     public static final String ARG_LOC = CLASS_TAG + "_LIST_OF_CITIES";
@@ -35,13 +25,7 @@ public class ListOfCitiesFragment extends Fragment {
 
     private ListView mCitiesListView;
 
-    public static ListOfCitiesFragment newInstance(String param1, String param2) {
-        ListOfCitiesFragment fragment = new ListOfCitiesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_LOC, param1);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private ProgressDialog progressDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,42 +54,60 @@ public class ListOfCitiesFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        new getListOfCititesTask().execute();
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setIndeterminate(true);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage(getString(R.string.progress_dialog_loading_text));
+        refreshListOfCities();
     }
 
-    class getListOfCititesTask extends AsyncTask<Void, Void, List<String>> {
-        private CitiesApi mCitiesApi;
+    private void refreshListOfCities() {
+        progressDialog.show();
 
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            if(mCitiesApi == null) {  // Only do this once
-                CitiesApi.Builder builder = new CitiesApi.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null)
-                        .setRootUrl("<<REPLACE WITH URL>>")
-                        .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
-                            @Override
-                            public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest) throws IOException {
-                                abstractGoogleClientRequest.setDisableGZipContent(true);
-                            }
-                        });
-
-                mCitiesApi = builder.build();
+        Api.getListOfCities(new Api.ApiCallback() {
+            @Override
+            public void success(Object result) {
+                ListOfCitiesAdapter listOfCitiesAdapter = new ListOfCitiesAdapter((List<String>)result, getActivity());
+                mCitiesListView.setAdapter(listOfCitiesAdapter);
+                progressDialog.dismiss();
             }
 
-            List<String> retCities = null;
-
-            try {
-                retCities = mCitiesApi.getListOfCities().execute().getCities();
-            } catch (IOException e) {
-                Log.e(CLASS_TAG, "Error: ", e);
-            } finally {
-                return retCities;
+            @Override
+            public void failure(Exception e, Object result) {
+                progressDialog.dismiss();
+                Log.e(CLASS_TAG, "Error getting list of cities", e);
             }
-        }
-
-        @Override
-        protected void onPostExecute(List<String> result) {
-            ListOfCitiesAdapter listOfCitiesAdapter = new ListOfCitiesAdapter(result, getActivity());
-            mCitiesListView.setAdapter(listOfCitiesAdapter);
-        }
+        });
     }
+
+    /**
+     * OptionsMenuCallback methods
+     */
+    @Override
+    public void addCitySelected() {
+        AddCityDialogFragment addCityDialogFragment = new AddCityDialogFragment();
+        addCityDialogFragment.setCallback(new AddCityDialogFragment.AddCityDialogFragmentCallback() {
+            @Override
+            public void onDonePressed(String city) {
+                progressDialog.show();
+                Api.addCityToList(city, (new Api.ApiCallback() {
+                    @Override
+                    public void success(Object result) {
+                        //not dismissing progress dialog because refresh will eventually dismiss
+                        refreshListOfCities();
+                    }
+
+                    @Override
+                    public void failure(Exception e, Object result) {
+                        progressDialog.dismiss();
+                        Log.e(CLASS_TAG, "Error adding city", e);
+                    }
+                }));
+            }
+        });
+
+        addCityDialogFragment.show(getChildFragmentManager(), "add_city_dialog_frag");
+    }
+
+
 }
