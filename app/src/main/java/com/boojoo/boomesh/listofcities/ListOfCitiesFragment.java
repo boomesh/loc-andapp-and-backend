@@ -19,6 +19,7 @@ import java.util.List;
 public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivity.OptionsMenuCallback {
 
     private static final String CLASS_TAG = ListOfCitiesFragment.class.getSimpleName();
+    public static final String FRAG_TAG = CLASS_TAG + "_FRAGMENT";
     public static final String ARG_LOC = CLASS_TAG + "_LIST_OF_CITIES";
 
     private List<String> mCities;
@@ -61,20 +62,32 @@ public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivi
         refreshListOfCities();
     }
 
+    private void dismissProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    private void showProgressDialog() {
+        if (progressDialog != null && !progressDialog.isShowing()) {
+            progressDialog.show();
+        }
+    }
+
     private void refreshListOfCities() {
-        progressDialog.show();
+        showProgressDialog();
 
         Api.getListOfCities(new Api.ApiCallback() {
             @Override
             public void success(Object result) {
                 ListOfCitiesAdapter listOfCitiesAdapter = new ListOfCitiesAdapter((List<String>)result, getActivity());
                 mCitiesListView.setAdapter(listOfCitiesAdapter);
-                progressDialog.dismiss();
+                dismissProgressDialog();
             }
 
             @Override
             public void failure(Exception e, Object result) {
-                progressDialog.dismiss();
+                dismissProgressDialog();
                 Log.e(CLASS_TAG, "Error getting list of cities", e);
             }
         });
@@ -89,7 +102,7 @@ public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivi
         addCityDialogFragment.setCallback(new AddCityDialogFragment.AddCityDialogFragmentCallback() {
             @Override
             public void onDonePressed(String city) {
-                progressDialog.show();
+                showProgressDialog();
                 Api.addCityToList(city, (new Api.ApiCallback() {
                     @Override
                     public void success(Object result) {
@@ -99,7 +112,7 @@ public class ListOfCitiesFragment extends Fragment implements ListOfCitiesActivi
 
                     @Override
                     public void failure(Exception e, Object result) {
-                        progressDialog.dismiss();
+                        dismissProgressDialog();
                         Log.e(CLASS_TAG, "Error adding city", e);
                     }
                 }));

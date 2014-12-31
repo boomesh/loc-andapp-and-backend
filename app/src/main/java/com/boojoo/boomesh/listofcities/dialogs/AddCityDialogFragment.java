@@ -59,7 +59,9 @@ public class AddCityDialogFragment extends DialogFragment {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    mCallback.onDonePressed(v.getText().toString());
+                    if (mCallback != null) {
+                        mCallback.onDonePressed(v.getText().toString());
+                    }
                     dismiss();
                     return true;
                 }
