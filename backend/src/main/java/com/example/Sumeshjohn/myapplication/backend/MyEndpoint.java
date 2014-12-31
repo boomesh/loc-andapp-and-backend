@@ -10,23 +10,32 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import javax.inject.Named;
 
 /**
  * An endpoint class we are exposing
  */
-@Api(name = "myApi", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.myapplication.Sumeshjohn.example.com", ownerName = "backend.myapplication.Sumeshjohn.example.com", packagePath = ""))
+@Api(name = "citiesApi", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.loc.boomesh.boojoo.com", ownerName = "backend.loc.boomesh.boojoo.com", packagePath = ""))
 public class MyEndpoint {
 
-    /**
-     * A simple endpoint method that takes a name and says Hi back
-     */
-    @ApiMethod(name = "sayHi")
-    public MyBean sayHi(@Named("name") String name) {
-        MyBean response = new MyBean();
-        response.setData("Hi, " + name);
+    private List<String> mCitites = Collections.EMPTY_LIST;
 
+    @ApiMethod(name = "getListOfCities")
+    public CitiesResponse getListOfCities() {
+        mCitites = new ArrayList<String>(Arrays.asList("Toronto", "Noronto", "Horonto", "Rowronto", "Showronto", "Whoaronto", "Mo'ronto", "Joeronto", "Yo,ronto", "Fo'Sho'ronto", "Joeronto"));
+        CitiesResponse response = new CitiesResponse();
+        response.setCities(mCitites);
         return response;
+    }
+
+    @ApiMethod(name = "addCityToList")
+    public void addCityToTopOfList(@Named("city") String city) {
+        mCitites.add(0, city);
     }
 
 }

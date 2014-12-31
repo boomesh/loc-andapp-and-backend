@@ -1,17 +1,31 @@
 package com.boojoo.boomesh.listofcities;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
 public class MainActivity extends ActionBarActivity {
 
+    private static final String CLASS_TAG = MainActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (savedInstanceState == null) {
+            try {
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.add(R.id.full_screen_fragment, new ListOfCitiesFragment());
+                transaction.disallowAddToBackStack();
+                transaction.commit();
+            } catch (Exception e) {
+                Log.e(CLASS_TAG, "Error loading ListOfCitiesFragment", e);
+            }
+        }
     }
 
 
@@ -30,7 +44,7 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_add_city) {
             return true;
         }
 
